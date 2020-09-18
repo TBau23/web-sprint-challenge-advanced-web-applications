@@ -12,8 +12,7 @@ const ColorList = ({ colors, updateColors }) => {
   // console.log(colors);
   const [editing, setEditing] = useState(false);
   const [colorToEdit, setColorToEdit] = useState(initialColor);
-  const { id } = useParams()
-  const history = useHistory()
+  
   
 
   const editColor = color => {
@@ -27,7 +26,7 @@ const ColorList = ({ colors, updateColors }) => {
     // think about where will you get the id from...
     // where is is saved right now?
     axiosWithAuth()
-      .put(`/api/colors/${id}`, colorToEdit)
+      .put(`/api/colors/${colorToEdit.id}`, colorToEdit)
       .then(res => {
         console.log(res)
         updateColors(colors.map(col => {
@@ -46,7 +45,7 @@ const ColorList = ({ colors, updateColors }) => {
   const deleteColor = color => {
     // make a delete request to delete this color
     axiosWithAuth()
-      .delete(`/api/colors/${id}`)
+      .delete(`/api/colors/${color.id}`)
       .then(res => {
         updateColors(colors.filter(col => col.id !== color.id))
       })

@@ -17,7 +17,7 @@ function App() {
         */}
         <ProtectedRoute exact path="/bubblepage" component={BubblePage} />
 
-        <Route path="/colorlist/:id"/>
+       
 
       </div>
     </Router>
