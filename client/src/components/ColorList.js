@@ -76,7 +76,7 @@ const ColorList = ({ colors, updateColors }) => {
       <ul>
         {colors.map(color => (
           <li key={color.color} onClick={() => editColor(color)}>
-            <span>
+            <span data-testid='test'>
               <span className="delete" onClick={e => {
                     e.stopPropagation();
                     deleteColor(color)
