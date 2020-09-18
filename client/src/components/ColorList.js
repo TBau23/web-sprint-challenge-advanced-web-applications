@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
 import {  axiosWithAuth } from '../utils/axiosWithAuth'
-import { useHistory, useParams } from 'react-router-dom'
+
 
 const initialColor = {
   color: "",
@@ -11,6 +10,8 @@ const initialColor = {
 const ColorList = ({ colors, updateColors }) => {
   // console.log(colors);
   const [editing, setEditing] = useState(false);
+  const [adding, setAdding] = useState(false)
+  const [newColor, setNewColor] = useState(initialColor)
   const [colorToEdit, setColorToEdit] = useState(initialColor);
   
   
@@ -19,6 +20,23 @@ const ColorList = ({ colors, updateColors }) => {
     setEditing(true);
     setColorToEdit(color);
   };
+
+  const addColor = (e) => {
+    e.preventDefault()
+    setAdding(true)    
+  }
+
+  const postColor = e => {
+    e.preventDefault()
+    axiosWithAuth()
+      .post('/api/colors', newColor)
+      .then(res => {
+        updateColors(res.data)
+        setNewColor(initialColor)
+      })
+      .catch(error => {console.log(error)})
+      
+  }
 
   const saveEdit = e => {
     e.preventDefault();
@@ -73,8 +91,37 @@ const ColorList = ({ colors, updateColors }) => {
               style={{ backgroundColor: color.code.hex }}
             />
           </li>
+          
         ))}
+        <button onClick={addColor}>Add Color</button>
       </ul>
+      {adding && (
+        <form onSubmit={postColor}>
+          <label> color name: &nbsp;
+            <input
+            type='text'
+            value={newColor.color}
+            onChange={e => setNewColor({ ...newColor, color: e.target.value})}
+            />
+          </label>
+
+          <label> hex code: &nbsp;
+            <input
+            type='text'
+            value={newColor.code.hex}
+            onChange={e => 
+              setNewColor({
+                ...newColor,
+                code: { hex: e.target.value}
+              })}
+            />
+          </label>
+          <button type='submit'>Add</button>
+          <button onClick={() => setAdding(false)}>Cancel</button>
+        </form>
+      )}
+
+
       {editing && (
         <form onSubmit={saveEdit}>
           <legend>edit color</legend>
