@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import axios from "axios";
+import {  axiosWithAuth } from '../utils/axiosWithAuth'
+
 
 const initialColor = {
   color: "",
@@ -7,24 +8,66 @@ const initialColor = {
 };
 
 const ColorList = ({ colors, updateColors }) => {
-  console.log(colors);
+  // console.log(colors);
   const [editing, setEditing] = useState(false);
+  const [adding, setAdding] = useState(false)
+  const [newColor, setNewColor] = useState(initialColor)
   const [colorToEdit, setColorToEdit] = useState(initialColor);
+  
+  
 
   const editColor = color => {
     setEditing(true);
     setColorToEdit(color);
   };
 
+  const addColor = (e) => {
+    e.preventDefault()
+    setAdding(true)    
+  }
+
+  const postColor = e => {
+    e.preventDefault()
+    axiosWithAuth()
+      .post('/api/colors', newColor)
+      .then(res => {
+        updateColors(res.data)
+        setNewColor(initialColor)
+      })
+      .catch(error => {console.log(error)})
+      
+  }
+
   const saveEdit = e => {
     e.preventDefault();
     // Make a put request to save your updated color
     // think about where will you get the id from...
     // where is is saved right now?
+    axiosWithAuth()
+      .put(`/api/colors/${colorToEdit.id}`, colorToEdit)
+      .then(res => {
+        console.log(res)
+        updateColors(colors.map(col => {
+          if (col.id === res.data.id) {
+            return res.data
+          } else {
+            return col
+          }
+        }))
+        
+
+      })
+      .catch(error => {console.log(error)})
   };
 
   const deleteColor = color => {
     // make a delete request to delete this color
+    axiosWithAuth()
+      .delete(`/api/colors/${color.id}`)
+      .then(res => {
+        updateColors(colors.filter(col => col.id !== color.id))
+      })
+      .catch(error => {console.log(error)})
   };
 
   return (
@@ -33,7 +76,7 @@ const ColorList = ({ colors, updateColors }) => {
       <ul>
         {colors.map(color => (
           <li key={color.color} onClick={() => editColor(color)}>
-            <span>
+            <span data-testid='test'>
               <span className="delete" onClick={e => {
                     e.stopPropagation();
                     deleteColor(color)
@@ -48,8 +91,37 @@ const ColorList = ({ colors, updateColors }) => {
               style={{ backgroundColor: color.code.hex }}
             />
           </li>
+          
         ))}
+        <button onClick={addColor}>Add Color</button>
       </ul>
+      {adding && (
+        <form onSubmit={postColor}>
+          <label> color name: &nbsp;
+            <input
+            type='text'
+            value={newColor.color}
+            onChange={e => setNewColor({ ...newColor, color: e.target.value})}
+            />
+          </label>
+
+          <label> hex code: &nbsp;
+            <input
+            type='text'
+            value={newColor.code.hex}
+            onChange={e => 
+              setNewColor({
+                ...newColor,
+                code: { hex: e.target.value}
+              })}
+            />
+          </label>
+          <button type='submit'>Add</button>
+          <button onClick={() => setAdding(false)}>Cancel</button>
+        </form>
+      )}
+
+
       {editing && (
         <form onSubmit={saveEdit}>
           <legend>edit color</legend>
